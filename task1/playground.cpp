@@ -56,6 +56,11 @@ int main(void)
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
@@ -66,13 +71,13 @@ int main(void)
 
 
 	static const GLfloat g_vertex_buffer_data[] = {
-		-0.8f, -0.8f,  1.0f,
-		 0.8f, -0.8f,  1.0f,
-		 0.0f,  0.8f, -1.0f,
+		-0.8f, -0.8f,  0.8f,
+		 0.8f, -0.8f,  0.8f,
+		 0.0f,  0.8f, -0.8f,
 
-		-0.5f,  0.5f, -1.0f,
-		 0.5f,  0.5f, -1.0f,
-		 0.0f, -0.5f,  1.0f,
+		-0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
+		 0.0f, -0.5f, -0.5f,
 	};
 
 	GLuint vertexbuffer;
@@ -86,7 +91,7 @@ int main(void)
 	do {
 
 		// Clear the screen
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use our shader
 		glUseProgram(programID1);
