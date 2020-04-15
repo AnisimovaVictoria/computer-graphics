@@ -98,7 +98,7 @@ int main(void)
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Projection matrix : 45Â° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+		// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 3.0f, 100.0f);
 		GLfloat radius = 10.0f;
 		GLfloat camX = sin(glfwGetTime()) * radius;
