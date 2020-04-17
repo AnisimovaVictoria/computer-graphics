@@ -18,10 +18,8 @@ glm::mat4 getViewMatrix(){
 glm::mat4 getProjectionMatrix(){
 	return ProjectionMatrix;
 }
-
-
 // Initial position : on +Z
-glm::vec3 position = glm::vec3( 0, 0, 5 ); 
+glm::vec3 position = glm::vec3( 0, 2, 5 ); 
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
@@ -30,9 +28,32 @@ float verticalAngle = 0.0f;
 float initialFoV = 45.0f;
 
 float speed = 3.0f; // 3 units / second
-float mouseSpeed = 0.001f;
+float mouseSpeed = 0.005f;
 
+glm::vec3 getPosition() {
+	return position;
+}
 
+glm::vec3 getDirection() {
+	// Get mouse position
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+
+	// Reset mouse position for next frame
+	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
+
+	// Compute new orientation
+	horizontalAngle += mouseSpeed * float(1024 / 2 - xpos);
+	verticalAngle += mouseSpeed * float(768 / 2 - ypos);
+
+	// Direction : Spherical coordinates to Cartesian coordinates conversion
+	glm::vec3 direction(
+		cos(verticalAngle) * sin(horizontalAngle),
+		sin(verticalAngle),
+		cos(verticalAngle) * cos(horizontalAngle)
+	);
+	return direction;
+}
 
 void computeMatricesFromInputs(){
 
@@ -60,6 +81,13 @@ void computeMatricesFromInputs(){
 		sin(verticalAngle),
 		cos(verticalAngle) * cos(horizontalAngle)
 	);
+
+	// Direction : Spherical coordinates to Cartesian coordinates conversion
+	glm::vec3 direction2d(
+		cos(verticalAngle) * sin(horizontalAngle),
+		0,
+		cos(verticalAngle) * cos(horizontalAngle)
+	);
 	
 	// Right vector
 	glm::vec3 right = glm::vec3(
@@ -71,11 +99,6 @@ void computeMatricesFromInputs(){
 	// Up vector
 	glm::vec3 up = glm::cross( right, direction );
 
-	glm::vec3 direction2d(
-		cos(verticalAngle) * sin(horizontalAngle),
-		0,
-		cos(verticalAngle) * cos(horizontalAngle)
-	);
 	// Move forward
 	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
 		position += direction2d * deltaTime * speed;
