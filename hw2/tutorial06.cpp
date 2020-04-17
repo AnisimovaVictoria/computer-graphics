@@ -198,7 +198,6 @@ int main( void )
 		enemy_coords[i][0] = (float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius;
 		enemy_coords[i][1] = (float)std::rand() / RAND_MAX * enemy_radius;
 		enemy_coords[i][2] = (float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius;
-		std::cout << enemy_coords[i][0] << " ";
 	}
 	float lastTime = glfwGetTime();
 	do{
