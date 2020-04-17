@@ -14,6 +14,7 @@ GLFWwindow* window;
 
 // Include GLM
 #include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
@@ -23,12 +24,12 @@ using namespace glm;
 
 const int ENEMY_NUMBER = 10;
 
-int main( void )
+int main(void)
 {
 	// Initialise GLFW
-	if( !glfwInit() )
+	if (!glfwInit())
 	{
-		fprintf( stderr, "Failed to initialize GLFW\n" );
+		fprintf(stderr, "Failed to initialize GLFW\n");
 		getchar();
 		return -1;
 	}
@@ -40,14 +41,14 @@ int main( void )
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768, "Tutorial 0 - Keyboard and Mouse", NULL, NULL);
-	if( window == NULL ){
-		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+	window = glfwCreateWindow(1024, 768, "Tutorial 0 - Keyboard and Mouse", NULL, NULL);
+	if (window == NULL) {
+		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		getchar();
 		glfwTerminate();
 		return -1;
 	}
-    glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);
 
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
@@ -60,12 +61,12 @@ int main( void )
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    // Hide the mouse and enable unlimited mouvement
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
-    // Set the mouse at the center of the screen
-    glfwPollEvents();
-    glfwSetCursorPos(window, 1024/2, 768/2);
+	// Hide the mouse and enable unlimited mouvement
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// Set the mouse at the center of the screen
+	glfwPollEvents();
+	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
 
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -73,7 +74,7 @@ int main( void )
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS); 
+	glDepthFunc(GL_LESS);
 
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
@@ -83,17 +84,17 @@ int main( void )
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-  GLuint FloorID = LoadShaders("TransformVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
+	GLuint FloorID = LoadShaders("TransformVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 	GLuint FloorMatrixID = glGetUniformLocation(FloorID, "MVP");
-  
+
 	GLuint EnemyID = LoadShaders("EnemyTransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 	GLuint EnemyMatrixID = glGetUniformLocation(EnemyID, "MVP");
-	
+
 	// Load the texture
 	GLuint Texture = loadDDS("uvtemplate.DDS");
-	
+
 	// Get a handle for our "myTextureSampler" uniform
-	GLuint TextureID  = glGetUniformLocation(FloorID, "myTextureSampler");
+	GLuint TextureID = glGetUniformLocation(FloorID, "myTextureSampler");
 
 	//floor
 	static const GLfloat g_vertex_buffer_data_floor[] = {
@@ -104,7 +105,7 @@ int main( void )
 		 100.0f, 0.0f, 100.0f,
 		 100.0f, 0.0f,-100.0f,
 		-100.0f, 0.0f,-100.0f,
-	};	
+	};
 
 	GLuint floorvertexbuffer;
 	glGenBuffers(1, &floorvertexbuffer);
@@ -112,35 +113,35 @@ int main( void )
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data_floor), g_vertex_buffer_data_floor, GL_STATIC_DRAW);
 
 	static const GLfloat g_vertex_buffer_data_enemy[] = {
-	 0.0f, 1.2f, 0.0f,
+	 0.0f, 2.0f, 0.0f,
 	-1.0f, 0.0f, 1.0f,
 	 1.0f, 0.0f, 1.0f,
 
-	 0.0f, 1.2f, 0.0f,
+	 0.0f, 2.0f, 0.0f,
 	 1.0f, 0.0f, 1.0f,
 	 1.0f, 0.0f,-1.0f,
 
-	 0.0f, 1.2f, 0.0f,
+	 0.0f, 2.0f, 0.0f,
 	 1.0f, 0.0f,-1.0f,
 	-1.0f, 0.0f,-1.0f,
 
-	 0.0f, 1.2f, 0.0f,
+	 0.0f, 2.0f, 0.0f,
 	-1.0f, 0.0f,-1.0f,
 	-1.0f, 0.0f, 1.0f,
 
-	 0.0f,-1.2f, 0.0f,
+	 0.0f,-2.0f, 0.0f,
 	 1.0f, 0.0f, 1.0f,
 	-1.0f, 0.0f, 1.0f,
 
-	 0.0f,-1.2f, 0.0f,
+	 0.0f,-2.0f, 0.0f,
 	 1.0f, 0.0f,-1.0f,
 	 1.0f, 0.0f, 1.0f,
 
-	 0.0f,-1.2f, 0.0f,
+	 0.0f,-2.0f, 0.0f,
 	-1.0f, 0.0f,-1.0f,
 	 1.0f, 0.0f,-1.0f,
 
-	 0.0f,-1.2f, 0.0f,
+	 0.0f,-2.0f, 0.0f,
 	-1.0f, 0.0f, 1.0f,
 	-1.0f, 0.0f,-1.0f,
 
@@ -192,15 +193,19 @@ int main( void )
 	glBindBuffer(GL_ARRAY_BUFFER, enemycolorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data_enemy), g_color_buffer_data_enemy, GL_STATIC_DRAW);
 
-	float enemy_coords[ENEMY_NUMBER][3];
+	float enemy_coords[ENEMY_NUMBER][7];
 	float enemy_radius = 10.0f;
 	for (int i = 0; i < ENEMY_NUMBER; i++) {
 		enemy_coords[i][0] = (float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius;
 		enemy_coords[i][1] = (float)std::rand() / RAND_MAX * enemy_radius;
 		enemy_coords[i][2] = (float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius;
+		enemy_coords[i][3] = (float)std::rand() / RAND_MAX;
+		enemy_coords[i][4] = (float)std::rand() / RAND_MAX;
+		enemy_coords[i][5] = (float)std::rand() / RAND_MAX;
+		enemy_coords[i][6] = ((float)std::rand() / RAND_MAX)*360.0f;
 	}
 	float lastTime = glfwGetTime();
-	do{
+	do {
 
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -211,11 +216,11 @@ int main( void )
 		glm::mat4 ViewMatrix = getViewMatrix();
 		glm::mat4 ModelMatrix = glm::mat4(1.0);
 		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-		
+
 		//FLOOR
 		// Use our shader
 		glUseProgram(FloorID);
-		
+
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
 		glUniformMatrix4fv(FloorMatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -233,20 +238,25 @@ int main( void )
 		);
 
 		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 2*3); // 12*3 indices starting at 0 -> 12 triangles
-		
+		glDrawArrays(GL_TRIANGLES, 0, 2 * 3); // 12*3 indices starting at 0 -> 12 triangles
+
 		//ENEMY
 		glUseProgram(EnemyID);
-		currTime = glfwGetTime();
+		float currTime = glfwGetTime();
 		for (int i = 0; i < ENEMY_NUMBER; i++) {
-		  // Enemies appear eventually
-			if (currTime - lastTime < i)
+			// Enemies appear eventually
+			
+			if (currTime - lastTime < i/10)
 				continue;
+			std::cout << i;
 
 			ModelMatrix = glm::mat4(1.0);
 			ModelMatrix[3][0] = enemy_coords[i][0];
 			ModelMatrix[3][1] = enemy_coords[i][1];
 			ModelMatrix[3][2] = enemy_coords[i][2];
+
+			glm::vec3 myRotationAxis(enemy_coords[i][3], enemy_coords[i][4], enemy_coords[i][6]);
+			ModelMatrix = glm::rotate(enemy_coords[i][6], myRotationAxis) * ModelMatrix;
 
 			MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 			// Send our transformation to the currently bound shader, 
@@ -287,12 +297,12 @@ int main( void )
 		glfwPollEvents();
 
 	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		   glfwWindowShouldClose(window) == 0 );
+	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+		glfwWindowShouldClose(window) == 0);
 
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &floorvertexbuffer);
-	
+
 	//glDeleteBuffers(1, &vertexbuffer);
 	//glDeleteBuffers(1, &uvbuffer);
 	glDeleteProgram(FloorID);
@@ -305,4 +315,3 @@ int main( void )
 
 	return 0;
 }
-
