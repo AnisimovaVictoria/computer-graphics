@@ -197,12 +197,12 @@ int main(void)
 	float enemy_radius = 10.0f;
 	for (int i = 0; i < ENEMY_NUMBER; i++) {
 		enemy_coords[i][0] = (float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius;
-		enemy_coords[i][1] = (float)std::rand() / RAND_MAX * enemy_radius;
+		enemy_coords[i][1] = (float)std::rand() / RAND_MAX * enemy_radius + 2.0f;
 		enemy_coords[i][2] = (float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius;
 		enemy_coords[i][3] = (float)std::rand() / RAND_MAX;
 		enemy_coords[i][4] = (float)std::rand() / RAND_MAX;
 		enemy_coords[i][5] = (float)std::rand() / RAND_MAX;
-		enemy_coords[i][6] = ((float)std::rand() / RAND_MAX)*360.0f;
+		enemy_coords[i][6] = ((float)std::rand() / RAND_MAX) * 360.0f;
 	}
 	float lastTime = glfwGetTime();
 	do {
@@ -245,18 +245,18 @@ int main(void)
 		float currTime = glfwGetTime();
 		for (int i = 0; i < ENEMY_NUMBER; i++) {
 			// Enemies appear eventually
-			
-			if (currTime - lastTime < i/10)
+
+			if (currTime - lastTime < i)
 				continue;
-			std::cout << i;
 
 			ModelMatrix = glm::mat4(1.0);
-			ModelMatrix[3][0] = enemy_coords[i][0];
-			ModelMatrix[3][1] = enemy_coords[i][1];
-			ModelMatrix[3][2] = enemy_coords[i][2];
 
-			glm::vec3 myRotationAxis(enemy_coords[i][3], enemy_coords[i][4], enemy_coords[i][6]);
+			glm::vec3 myRotationAxis(enemy_coords[i][3], enemy_coords[i][4], enemy_coords[i][5]);
 			ModelMatrix = glm::rotate(enemy_coords[i][6], myRotationAxis) * ModelMatrix;
+			glm::vec3 myTranslationVector(enemy_coords[i][0], enemy_coords[i][1], enemy_coords[i][2]);
+			ModelMatrix = glm::translate(glm::mat4(), myTranslationVector) * ModelMatrix;
+
+
 
 			MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 			// Send our transformation to the currently bound shader, 
