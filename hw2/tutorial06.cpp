@@ -237,10 +237,10 @@ int main( void )
 		
 		//ENEMY
 		glUseProgram(EnemyID);
-
+		currTime = glfwGetTime();
 		for (int i = 0; i < ENEMY_NUMBER; i++) {
 		  // Enemies appear eventually
-			if (glfwGetTime() - lastTime < i)
+			if (currTime - lastTime < i)
 				continue;
 
 			ModelMatrix = glm::mat4(1.0);
