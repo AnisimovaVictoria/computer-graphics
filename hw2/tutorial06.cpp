@@ -818,7 +818,7 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, sphereuvbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data_sphere), g_uv_buffer_data_sphere, GL_STATIC_DRAW);
 
-	std::vector<std::vector<glm::vec3>> sphere_coords; // положение и направление
+	std::vector<std::vector<glm::vec3>> sphere_coords; // ГЇГ®Г«Г®Г¦ГҐГ­ГЁГҐ ГЁ Г­Г ГЇГ°Г ГўГ«ГҐГ­ГЁГҐ
 	float sphere_speed = 15.0f;
 
 	const float beginTime = glfwGetTime();
@@ -991,7 +991,7 @@ int main(void)
 			sphere_coords[i][0] += sphere_coords[i][1] * sphere_speed * deltaTime;
 		}
 
-		//Colider
+		//Collider
 		for (int i = 0; i < enemy_coords.size(); i++) {
 			glm::vec3 enemy_pos = glm::vec3(enemy_coords[i][0], enemy_coords[i][1], enemy_coords[i][2]);
 			for (int j = 0; j < sphere_coords.size(); j++) {
