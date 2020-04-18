@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
+#include <vector>
 
 // Include GLEW
 #include <GL/glew.h>
@@ -195,18 +196,9 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, enemycolorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data_enemy), g_color_buffer_data_enemy, GL_STATIC_DRAW);
 
-	float enemy_coords[ENEMY_NUMBER][7];
-	float enemy_radius = 10.0f;
-	for (int i = 0; i < ENEMY_NUMBER; i++) {
-		enemy_coords[i][0] = (float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius;
-		enemy_coords[i][1] = (float)std::rand() / RAND_MAX * enemy_radius;
-		enemy_coords[i][2] = (float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius;
-		enemy_coords[i][3] = (float)std::rand() / RAND_MAX;
-		enemy_coords[i][4] = (float)std::rand() / RAND_MAX;
-		enemy_coords[i][5] = (float)std::rand() / RAND_MAX;
-		enemy_coords[i][6] = ((float)std::rand() / RAND_MAX)*360.0f;
-	}
-	float lastTime = glfwGetTime();
+	std::vector<std::vector<float>> enemy_coords;
+	int enemy_count = 0;
+	const float enemy_radius = 20.0f;
 
 	// Our vertices. 
 	static const GLfloat g_vertex_buffer_data_sphere[] = {
@@ -826,6 +818,11 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, sphereuvbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data_sphere), g_uv_buffer_data_sphere, GL_STATIC_DRAW);
 
+	std::vector<std::vector<glm::vec3>> sphere_coords; // положение и направление
+	float sphere_speed = 15.0f;
+
+	const float beginTime = glfwGetTime();
+
 	do {
 
 		// Clear the screen
@@ -860,16 +857,31 @@ int main(void)
 
 		// Draw the triangle !
 		glDrawArrays(GL_TRIANGLES, 0, 2 * 3); // 12*3 indices starting at 0 -> 12 triangles
-
+    
+		//TIME
+		double currentTime = glfwGetTime();
+		static double lastTime = glfwGetTime();
+		float deltaTime = float(currentTime - lastTime);
+		
 		//ENEMY
 		glUseProgram(EnemyID);
-		float currTime = glfwGetTime();
-		for (int i = 0; i < ENEMY_NUMBER; i++) {
-			// Enemies appear eventually
-			
-			if (currTime - lastTime < i)
-				continue;
-
+		
+		
+		if (currentTime - beginTime > enemy_count && enemy_count < ENEMY_NUMBER) {
+			std::vector<float> new_enemy = std::vector<float>({
+				(float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius + getPosition()[0],
+				(float)std::rand() / RAND_MAX * enemy_radius + 2.0f,
+				(float)std::rand() / RAND_MAX * 2 * enemy_radius - enemy_radius + getPosition()[2],
+				(float)std::rand() / RAND_MAX,
+				(float)std::rand() / RAND_MAX,
+				(float)std::rand() / RAND_MAX,
+				((float)std::rand() / RAND_MAX) * 360.0f,
+			});
+			enemy_coords.push_back(new_enemy);
+			enemy_count++;
+		}
+	  
+		for (int i = 0; i < enemy_coords.size(); i++) {
 			ModelMatrix = glm::mat4(1.0);
 			
 			glm::vec3 myRotationAxis(enemy_coords[i][3], enemy_coords[i][4], enemy_coords[i][5]);
@@ -912,53 +924,86 @@ int main(void)
 			glDrawArrays(GL_TRIANGLES, 0, 8 * 3);
 		}
 		
-		//SPHERE
-		// Use our shader
-		glUseProgram(SphereID);
+		// SPHERE
 
-		ModelMatrix = glm::mat4(1.0);
+		//Create sphere if mouse was released
+		static int oldState = GLFW_RELEASE;
+		int newState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		if (newState == GLFW_RELEASE && oldState == GLFW_PRESS) {
+			std::vector<glm::vec3> new_sphere = std::vector<glm::vec3>({
+				getPosition() + getDirection()*5.0f,
+				getDirection()
+				});
+			sphere_coords.push_back(new_sphere);
+		}
+		oldState = newState;
 
-		glm::vec3 myTranslationVector(glm::vec3(0,2,0));
-		ModelMatrix = glm::translate(glm::mat4(), myTranslationVector) * ModelMatrix;
+		//Draw spheres
+		for (int i = 0; i < sphere_coords.size(); i++) {
+			// Use our shader
+			glUseProgram(SphereID);
 
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+			ModelMatrix = glm::mat4(0.7f);
 
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
-		glUniformMatrix4fv(SphereMatrixID, 1, GL_FALSE, &MVP[0][0]);
+			glm::vec3 myTranslationVector(sphere_coords[i][0]);
+			ModelMatrix = glm::translate(glm::mat4(), myTranslationVector) * ModelMatrix;
 
-		// Bind our texture in Texture Unit 0
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, SphereTexture);
-		// Set our "myTextureSampler" sampler to use Texture Unit 0
-		glUniform1i(SphereTextureID, 0);
+			MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
-		// 1rst attribute buffer : vertices
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, spherevertexbuffer);
-		glVertexAttribPointer(
-			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-		);
+			// Send our transformation to the currently bound shader, 
+			// in the "MVP" uniform
+			glUniformMatrix4fv(SphereMatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-		// 2nd attribute buffer : UVs
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, sphereuvbuffer);
-		glVertexAttribPointer(
-			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-			2,                                // size : U+V => 2
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
+			// Bind our texture in Texture Unit 0
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, SphereTexture);
+			// Set our "myTextureSampler" sampler to use Texture Unit 0
+			glUniform1i(SphereTextureID, 0);
 
-		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 100 * 3); // 12*3 indices starting at 0 -> 12 triangles
+			// 1rst attribute buffer : vertices
+			glEnableVertexAttribArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, spherevertexbuffer);
+			glVertexAttribPointer(
+				0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+				3,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset
+			);
+
+			// 2nd attribute buffer : UVs
+			glEnableVertexAttribArray(1);
+			glBindBuffer(GL_ARRAY_BUFFER, sphereuvbuffer);
+			glVertexAttribPointer(
+				1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+				2,                                // size : U+V => 2
+				GL_FLOAT,                         // type
+				GL_FALSE,                         // normalized?
+				0,                                // stride
+				(void*)0                          // array buffer offset
+			);
+
+			// Draw the triangle !
+			glDrawArrays(GL_TRIANGLES, 0, 100 * 3); // 12*3 indices starting at 0 -> 12 triangles
+																							
+			//Update sphere coords
+			sphere_coords[i][0] += sphere_coords[i][1] * sphere_speed * deltaTime;
+		}
+
+		//Colider
+		for (int i = 0; i < enemy_coords.size(); i++) {
+			glm::vec3 enemy_pos = glm::vec3(enemy_coords[i][0], enemy_coords[i][1], enemy_coords[i][2]);
+			for (int j = 0; j < sphere_coords.size(); j++) {
+				if (glm::distance(enemy_pos, sphere_coords[j][0]) < 0.7+1.2) {
+					enemy_coords.erase(enemy_coords.begin()+i);
+					sphere_coords.erase(sphere_coords.begin() + j);
+				}
+			}
+		}
+
+		// For the next frame, the "last time" will be "now"
+		lastTime = currentTime;
 		
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
