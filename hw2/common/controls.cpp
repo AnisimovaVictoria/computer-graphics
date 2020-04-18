@@ -27,7 +27,7 @@ float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f;
 
-float speed = 3.0f; // 3 units / second
+float speed = 5.0f; // 5 units / second
 float mouseSpeed = 0.005f;
 
 glm::vec3 getPosition() {
@@ -130,3 +130,4 @@ void computeMatricesFromInputs(){
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
 }
+
