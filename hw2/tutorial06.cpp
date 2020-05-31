@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <ctime>
 #include <vector>
 
@@ -23,7 +24,7 @@ using namespace glm;
 #include <common/texture.hpp>
 #include <common/controls.hpp>
 
-const int ENEMY_NUMBER = 10;
+const int ENEMY_NUMBER = 100;
 
 int main(void)
 {
@@ -198,7 +199,7 @@ int main(void)
 
 	std::vector<std::vector<float>> enemy_coords;
 	int enemy_count = 0;
-	const float enemy_radius = 20.0f;
+	const float enemy_radius = 30.0f;
 
 	// Our vertices. 
 	static const GLfloat g_vertex_buffer_data_sphere[] = {
@@ -1005,6 +1006,78 @@ int main(void)
 		// For the next frame, the "last time" will be "now"
 		lastTime = currentTime;
 		
+		// Save if S is released
+		//Create sphere if mouse was released
+		static int oldStateS = GLFW_RELEASE;
+		int newStateS = glfwGetKey(window, GLFW_KEY_S);
+		if (newStateS == GLFW_RELEASE && oldStateS == GLFW_PRESS) {
+			std::ofstream file;
+			file.open("save.txt", std::ios::out | std::ios::trunc);
+			glm::vec3 position = getPosition();
+			file << position[0] << " " << position[1] << " " << position[2] << " "
+				<< getHorizontalAngle() << " " << getVerticalAngle() << std::endl;
+
+			file << enemy_count << std::endl; // enemy_count = dead + living enemies
+			
+			file << enemy_coords.size() << std::endl;
+			for (int i = 0; i < enemy_coords.size(); i++)
+				for (int j = 0; j < 7; j++)
+					file << enemy_coords[i][j] << std::endl;
+
+			file << sphere_coords.size() << std::endl;
+			for (int i = 0; i < sphere_coords.size(); i++) {
+				file << sphere_coords[i][0][0] << std::endl;
+				file << sphere_coords[i][0][1] << std::endl;
+				file << sphere_coords[i][0][2] << std::endl;
+				file << sphere_coords[i][1][0] << std::endl;
+				file << sphere_coords[i][1][1] << std::endl;
+				file << sphere_coords[i][1][2] << std::endl;
+			}
+
+			file.close();
+			std::cout << "ok" << std::endl;
+		}
+		oldStateS = newStateS;
+		
+		// Download if D is released
+		static int oldStateD = GLFW_RELEASE;
+		int newStateD = glfwGetKey(window, GLFW_KEY_D);
+		if (newStateD == GLFW_RELEASE && oldStateD == GLFW_PRESS) {
+			std::ifstream file;
+			file.open("save.txt", std::ios::in);
+			float x, y, z, a, b;
+			file >> x >> y >> z >> a >> b;
+			setPositionAndDirection(glm::vec3(x, y, z), a, b);
+
+			file >> enemy_count; // enemy_count = dead + living enemies
+
+			enemy_coords.clear();
+
+			int n; // n = living enemies 
+			file >> n;
+
+			for (int i = 0; i < n; i++) {
+				std::vector<float> v;
+				for (int j = 0; j < 7; j++) {
+					float x;
+					file >> x;
+					v.push_back(x);
+				}
+				enemy_coords.push_back(v);
+			}
+
+			sphere_coords.clear();
+			file >> n;
+			for (int i = 0; i < n; i++) {
+				float a, b, c, d, e, f;
+				file >> a >> b >> c >> d >> e >> f;
+				sphere_coords.push_back(std::vector<glm::vec3>({ glm::vec3(a, b, c), glm::vec3(d, e, f) }));
+			}
+			file.close();
+			std::cout << "ok" << std::endl;
+		}
+		oldStateD = newStateD;
+
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glfwSwapBuffers(window);
