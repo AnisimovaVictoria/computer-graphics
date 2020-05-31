@@ -35,24 +35,25 @@ glm::vec3 getPosition() {
 }
 
 glm::vec3 getDirection() {
-	// Get mouse position
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-
-	// Reset mouse position for next frame
-	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
-
-	// Compute new orientation
-	horizontalAngle += mouseSpeed * float(1024 / 2 - xpos);
-	verticalAngle += mouseSpeed * float(768 / 2 - ypos);
-
-	// Direction : Spherical coordinates to Cartesian coordinates conversion
-	glm::vec3 direction(
+	return glm::vec3(
 		cos(verticalAngle) * sin(horizontalAngle),
 		sin(verticalAngle),
 		cos(verticalAngle) * cos(horizontalAngle)
 	);
-	return direction;
+}
+
+float getHorizontalAngle() {
+	return horizontalAngle;
+}
+
+float getVerticalAngle(){
+	return verticalAngle;
+}
+
+void setPositionAndDirection(glm::vec3 position_, float horizontalAngle_, float verticalAngle_) {
+	position = position_;
+	horizontalAngle = horizontalAngle_;
+	verticalAngle = verticalAngle_;
 }
 
 void computeMatricesFromInputs(){
